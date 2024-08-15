@@ -6,7 +6,7 @@ defmodule EtsSelectTest do
     expected = [
       {
         {:"$1", %{status: :"$2"}},
-        [{:orelse, {:==, :"$2", :new}, {:==, :"$2", :old}}],
+        [{:orelse, {:=, :"$2", :new}, {:=, :"$2", :old}}],
         [:"$_"]
       }
     ]
@@ -17,13 +17,8 @@ defmodule EtsSelectTest do
     query = %{or: [[:=, :age, 30], [:=, :age, 35], [:=, :name, "Bob"]]}
     expected = [
       {
-        {:"$1", %{name: :"$2", age: :"$3"}},
-        [{:orelse,
-          {:==, :"$3", 30},
-          {:orelse,
-            {:==, :"$3", 35},
-            {:==, :"$2", "Bob"}
-          }}],
+        {:"$1", %{age: :"$2", name: :"$3"}},
+        [{:orelse, {:==, :"$2", 30}, {:orelse, {:==, :"$2", 35}, {:==, :"$3", "Bob"}}}],
         [:"$_"]
       }
     ]
@@ -31,11 +26,11 @@ defmodule EtsSelectTest do
   end
 
   test "build with AND conditions" do
-    query = %{and: [[:=, :age, 30], [:=, :name, "Bob"]]}
+    query = %{and: [[:>, :age, 30], [:>, :name, "Eve"]]}
     expected = [
       {
-        {:"$1", %{age: 30, name: "Bob"}},
-        [],
+        {:"$1", %{age: :"$2", name: :"$3"}},
+        [{:andalso, {:>, :"$2", 30}, {:>, :"$3", "Eve"}}],
         [:"$_"]
       }
     ]
@@ -46,8 +41,8 @@ defmodule EtsSelectTest do
     query = %{age: 30, name: "Bob"}
     expected = [
       {
-        {:"$1", %{age: 30, name: "Bob"}},
-        [],
+        {:"$1", %{age: :"$2", name: :"$3"}},
+        [{:andalso, {:==, :"$2", 30}, {:==, :"$3", "Bob"}}],
         [:"$_"]
       }
     ]

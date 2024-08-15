@@ -1,0 +1,98 @@
+
+
+
+
+
+I want to have a ETS query builder for ETS tables in Erlang.
+The items have uniform structure: key -> data (a map with values).
+
+Implement EtsSelect.build(query) function. Use following examples
+
+Example1:
+Input: %{or: [[:=, :status, :new], [:=, :status, :old]]}
+Output: [
+  {
+    # Match any key and a map with any content
+    {:"$1", %{status: :"$2"}},
+    # Guard: Select records where status is :new or :old
+    [{:orelse, {:==, :"$2", :new}, {:==, :"$2", :old}}],
+    # Return the matched item (key and value)
+    [:"$_"]
+  }
+]
+
+Example2:
+Input: %{or: [[:=, :status, :new], [:=, :status, :old]]}
+Output: [
+  {
+    # Match any key and a map with any content
+    {:"$1", %{status: :"$2"}},
+    # Guard: Select records where status is :new or :old
+    [{:orelse, {:==, :"$2", :new}, {:==, :"$2", :old}}],
+    # Return the matched item (key and value)
+    [:"$_"]
+  }
+]
+
+
+Example3:
+Input: %{or: [[:=, :age, 30], [:=, :age, 30], [:=, :name, "Bob"]]}
+Output:  [
+  {
+    # Match any key and a map with any content
+    {:"$1", %{name: :"$2", age: :"$3"}},
+    # Guard: Select records where age is 30, 35, or name is Bob
+    [{:orelse,
+      {:==, :"$3", 30},
+      {:orelse,
+        {:==, :"$3", 35},
+        {:==, :"$2", "Bob"}
+      }}],
+    # Return the matched item (key and value)
+    [:"$_"]
+  }
+]
+
+Example4:
+Input: %{and: [[:>, :age, 30], [:>, :name, "Eve"]]}
+Output = [
+      {
+        # Match any key and a map with name and age
+        {:"$1", %{name: :"$2", age: :"$3"}},
+        # Guard: Select records where age > 30 and name > "Eve"
+        [{:andalso, {:>, :"$3", 30}, {:>, :"$2", "Eve"}}],
+        # Return the matched item (key and value)
+        [:"$_"]
+      }
+    ]
+
+
+
+---------------------
+When running `EtsSelect.build(%{and: [[:=, :status, :new], [:=, :status, :old]]})` I get following error:
+
+** (ArithmeticError) bad argument in arithmetic expression: nil + 1
+    :erlang.+(nil, 1)
+    (ets_select 0.1.0) lib/ets_select.ex:47: EtsSelect.var_index/1
+    (ets_select 0.1.0) lib/ets_select.ex:42: EtsSelect.build_condition/1
+    (elixir 1.17.0) lib/enum.ex:1703: Enum."-map/2-lists^map/1-1-"/2
+    (ets_select 0.1.0) lib/ets_select.ex:37: EtsSelect.build_guard/2
+    (ets_select 0.1.0) lib/ets_select.ex:18: EtsSelect.build_query/2
+    iex:1: (file)
+
+
+
+Change the handling for "AND" to support following output:
+
+Example4:
+Input: %{and: [[:>, :age, 30], [:>, :name, "Eve"]]}
+Output = [
+      {
+        # Match any key and a map with name and age
+        {:"$1", %{name: :"$2", age: :"$3"}},
+        # Guard: Select records where age > 30 and name > "Eve"
+        [{:andalso, {:>, :"$3", 30}, {:>, :"$2", "Eve"}}],
+        # Return the matched item (key and value)
+        [:"$_"]
+      }
+    ]
