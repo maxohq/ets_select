@@ -1,9 +1,3 @@
-
-
-
-
-
-
 I want to have a ETS query builder for ETS tables in Erlang.
 The items have uniform structure: key -> data (a map with values).
 
@@ -115,4 +109,84 @@ BUT it returns:
 [
   {{:"$1", %{status: :"$3"}},
    [{:orelse, {:=, :"$3", :old}, {:orelse, {:=, :"$2", :new}, false}}], [:"$_"]}
+]
+
+
+
+
+
+
+
+---------------------------- WORKING!!!!
+You have an issue when an attribute name appears multiple times in the query.
+The variable index is incorrect in that case.
+
+
+query = %{or: [[:=, :status, :new], [:=, :status, :old]]}
+EtsSelect.build(query)
+
+RESULT:
+[
+  {{:"$1", %{status: :"$3"}},
+   [{:orelse, {:=, :"$2", :new}, {:=, :"$3", :old}}],
+   [:"$_"]}
+]
+
+EXPECTED RESULT:
+[
+  {{:"$1", %{status: :"$2"}},
+  [{:orelse, {:=, :"$2", :new}, {:=, :"$2", :old}}],
+   [:"$_"]}
+]
+
+
+
+
+
+
+
+
+table = :ets.new(:my_table, [:set, :public, :named_table])
+
+:ets.insert(:my_table, {:key1, %{status: :new, age: 30}})
+:ets.insert(:my_table, {:key2, %{status: :old, age: 25}})
+:ets.insert(:my_table, {:key3, %{status: :middle, age: 35}})
+
+
+Make all the required changes to generate following query responses:
+
+INPUT1 = %{or: [[:=, :status, :new], [:=, :status, :old]]}
+OUTPUT1 = [
+  {
+    {:"$1", %{status: :"$2"}},
+    [{:orelse, {:==, :"$2", :old}, {:==, :"$2", :new}}],
+    [:"$_"]
+  }
+]
+
+INPUT2 = %{and: [[:=, :status, :new], [:=, :age, 30]]}
+OUTPUT2 = [
+  {
+    {:"$1", %{status: :"$2", age: :"$3"}},
+    [{:andalso, {:==, :"$3", 30}, {:==, :"$2", :new}}],
+    [:"$_"]
+  }
+]
+
+INPUT3 = %{or: [[:=, :status, :new], [:=, :status, :old], [:=, :age, 35]]}
+OUTPUT3 = [
+  {
+    {:"$1", %{status: :"$2", age: :"$3"}},
+    [{:orelse, {:==, :"$3", 35}, {:orelse, {:==, :"$2", :old}, {:==, :"$2", :new}}}],
+    [:"$_"]
+  }
+]
+
+INPUT4 = %{and: [[:=, :status, :new], [:<, :age, 100], [:>, :age, 30]]}
+OUTPUT4 = [
+  {
+    {:"$1", %{status: :"$2", age: :"$3"}},
+    [{:andalso, {:==, :"$2", :new}, {:andalso, {:>, :"$3", 30}, {:<, :"$3", 100}}}],
+    [:"$_"]
+  }
 ]
