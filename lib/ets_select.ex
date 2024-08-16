@@ -32,12 +32,16 @@ defmodule EtsSelect do
   end
 
   defp handle_condition(%{and: nested_conditions}, {match_spec, guards}) do
-    {updated_match_spec, nested_guards} = Enum.reduce(nested_conditions, {match_spec, []}, &handle_condition/2)
+    {updated_match_spec, nested_guards} =
+      Enum.reduce(nested_conditions, {match_spec, []}, &handle_condition/2)
+
     {updated_match_spec, [build_guard(:and, nested_guards) | guards]}
   end
 
   defp handle_condition(%{or: nested_conditions}, {match_spec, guards}) do
-    {updated_match_spec, nested_guards} = Enum.reduce(nested_conditions, {match_spec, []}, &handle_condition/2)
+    {updated_match_spec, nested_guards} =
+      Enum.reduce(nested_conditions, {match_spec, []}, &handle_condition/2)
+
     {updated_match_spec, [build_guard(:or, nested_guards) | guards]}
   end
 
@@ -49,7 +53,10 @@ defmodule EtsSelect do
   defp build_project(_match_spec, nil), do: [:"$_"]
 
   defp build_project(match_spec, project) do
-    [List.to_tuple(Enum.map(project, fn field -> Map.get(match_spec, field) end))]
+    return_clause =
+      Enum.map(project, fn field -> {field, Map.get(match_spec, field)} end) |> Enum.into(%{})
+
+    [return_clause]
   end
 
   defp translate_op(:=), do: :==

@@ -74,7 +74,7 @@ defmodule EtsSelectTest do
     auto_assert(
       [
         {{:"$1", %{status: :"$2"}}, [{:orelse, {:==, :"$2", :new}, {:==, :"$2", :old}}],
-         nil: :"$2"}
+         [%{status: :"$2"}]}
       ] <- EtsSelect.build(query)
     )
   end
@@ -85,7 +85,7 @@ defmodule EtsSelectTest do
     auto_assert(
       [
         {{:"$1", %{age: :"$2", name: :"$3"}}, [{:andalso, {:>, :"$2", 30}, {:>, :"$3", "Eve"}}],
-         "$3": :"$2"}
+         [%{age: :"$2", name: :"$3"}]}
       ] <- EtsSelect.build(query)
     )
   end
