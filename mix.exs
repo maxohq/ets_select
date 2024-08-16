@@ -23,7 +23,8 @@ defmodule EtsSelect.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:maxo_test_iex, "~> 0.1.7", only: :test}
+      {:maxo_test_iex, "~> 0.1.7", only: :test},
+      {:mneme, ">= 0.0.0", only: [:dev, :test]}
     ]
   end
 end
