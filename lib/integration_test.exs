@@ -5,11 +5,11 @@ defmodule EtsSelect.IntegrationTest do
   setup do
     :ets.new(:my_table, [:set, :public, :named_table])
 
-    :ets.insert(:my_table, {:key1, %{status: :new, age: 30}})
-    :ets.insert(:my_table, {:key2, %{status: :old, age: 25}})
-    :ets.insert(:my_table, {:key3, %{status: :middle, age: 35}})
-    :ets.insert(:my_table, {:key4, %{status: :ancient, age: 100}})
-    :ets.insert(:my_table, {:key5, %{status: :old, age: 50}})
+    :ets.insert(:my_table, {:key1, %{status: :new, age: 30, name: "1"}})
+    :ets.insert(:my_table, {:key2, %{status: :old, age: 25, name: "2"}})
+    :ets.insert(:my_table, {:key3, %{status: :middle, age: 35, name: "3"}})
+    :ets.insert(:my_table, {:key4, %{status: :ancient, age: 100, name: "4"}})
+    :ets.insert(:my_table, {:key5, %{status: :old, age: 50, name: "5"}})
 
     :ok
   end
@@ -52,5 +52,10 @@ defmodule EtsSelect.IntegrationTest do
         key1: %{age: 30, status: :new}
       ] <- check(q)
     )
+  end
+
+  test "simplistic / implicit AND" do
+    q = %{status: :new, age: 30}
+    auto_assert([key1: %{age: 30, name: "1", status: :new}] <- check(q))
   end
 end
