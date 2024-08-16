@@ -45,6 +45,11 @@ defmodule EtsSelect do
     {updated_match_spec, [build_guard(:or, nested_guards) | guards]}
   end
 
+  defp handle_condition(map, {match_spec, guards}) when is_map(map) and map_size(map) == 1 do
+    [{k, v}] = Map.to_list(map)
+    handle_condition([:=, k, v], {match_spec, guards})
+  end
+
   defp build_guard(:and, [guard]), do: guard
   defp build_guard(:or, [guard]), do: guard
   defp build_guard(:and, guards), do: Enum.reduce(guards, &{:andalso, &2, &1})

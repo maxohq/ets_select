@@ -89,4 +89,26 @@ defmodule EtsSelectTest do
       ] <- EtsSelect.build(query)
     )
   end
+
+  describe "use maps" do
+    test "OR" do
+      query = %{or: [%{status: :new}, %{status: :old}], project: [:key, :status]}
+
+      auto_assert(
+        [
+          {{:"$1", %{status: :"$2"}}, [{:orelse, {:==, :"$2", :new}, {:==, :"$2", :old}}],
+           [%{key: nil, status: :"$2"}]}
+        ] <- EtsSelect.build(query)
+      )
+    end
+
+    test "AND" do
+      query = %{and: [%{status: :new}, %{age: 30}]}
+
+      auto_assert(
+        [{{:"$1", %{status: :"$2"}}, [{:andalso, {:==, :"$2", :new}, {:==, :"$3", 30}}], [:"$_"]}] <-
+          EtsSelect.build(query)
+      )
+    end
+  end
 end
