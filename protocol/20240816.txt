@@ -3,6 +3,7 @@
 
 
 
+
 I want to have a ETS query builder for ETS tables in Erlang.
 The items have uniform structure: key -> data (a map with values).
 
@@ -96,3 +97,22 @@ Output = [
         [:"$_"]
       }
     ]
+
+
+---------
+
+query = %{or: [[:=, :status, :new], [:=, :status, :old]]}
+expected = [
+  {
+    {:"$1", %{status: :"$2"}},
+    [{:orelse, {:==, :"$2", :new}, {:==, :"$2", :old}}],
+    [:"$_"]
+  }
+]
+assert EtsSelect.build(query) == expected
+
+BUT it returns:
+[
+  {{:"$1", %{status: :"$3"}},
+   [{:orelse, {:=, :"$3", :old}, {:orelse, {:=, :"$2", :new}, false}}], [:"$_"]}
+]
