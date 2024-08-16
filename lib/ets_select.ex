@@ -20,7 +20,7 @@ defmodule EtsSelect do
       Enum.reduce(conditions, {%{}, []}, fn [op, key, value], {match_spec, guards} ->
         var = Map.get(match_spec, key, :"$#{map_size(match_spec) + 2}")
         updated_match_spec = Map.put(match_spec, key, var)
-        updated_guards = [{op, var, value} | guards]
+        updated_guards = [{translate_op(op), var, value} | guards]
         {updated_match_spec, updated_guards}
       end)
 
@@ -34,8 +34,16 @@ defmodule EtsSelect do
   defp build_guard(:and, guards), do: Enum.reduce(guards, &{:andalso, &2, &1})
   defp build_guard(:or, guards), do: Enum.reduce(guards, &{:orelse, &2, &1})
 
-  defp build_project(match_spec, nil), do: [:"$_"]
+  defp build_project(_match_spec, nil), do: [:"$_"]
+
   defp build_project(match_spec, project) do
     [List.to_tuple(Enum.map(project, fn field -> Map.get(match_spec, field) end))]
   end
+
+  defp translate_op(:=), do: :==
+  defp translate_op(:>), do: :>
+  defp translate_op(:<), do: :<
+  defp translate_op(:>=), do: :>=
+  defp translate_op(:<=), do: :<=
+  defp translate_op(op), do: raise("INVALID OP #{op}")
 end
