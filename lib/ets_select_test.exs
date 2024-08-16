@@ -2,6 +2,18 @@ defmodule EtsSelectTest do
   use ExUnit.Case
   use Mneme
 
+  test "nested query" do
+    query = %{or: [[:=, :status, :new], %{and: [[:=, :status, :old], [:=, :age, 50]]}]}
+
+    auto_assert(
+      [
+        {{:"$1", %{age: :"$3", status: :"$2"}},
+         [{:orelse, {:==, :"$2", :new}, {:andalso, {:==, :"$3", 50}, {:==, :"$2", :old}}}],
+         [:"$_"]}
+      ] <- EtsSelect.build(query)
+    )
+  end
+
   test "build with OR conditions" do
     query = %{or: [[:=, :status, :new], [:=, :status, :old]]}
 

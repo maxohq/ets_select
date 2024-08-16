@@ -58,4 +58,13 @@ defmodule EtsSelect.IntegrationTest do
     q = %{status: :new, age: 30}
     auto_assert([key1: %{age: 30, name: "1", status: :new}] <- check(q))
   end
+
+  test "nested  and / or conditions" do
+    q = %{or: [[:=, :status, :new], %{and: [[:=, :status, :old], [:=, :age, 50]]}]}
+
+    auto_assert(
+      [key5: %{age: 50, name: "5", status: :old}, key1: %{age: 30, name: "1", status: :new}] <-
+        check(q)
+    )
+  end
 end

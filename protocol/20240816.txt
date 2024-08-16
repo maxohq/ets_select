@@ -190,3 +190,19 @@ OUTPUT4 = [
     [:"$_"]
   }
 ]
+
+
+----------------
+
+I want to also support nested conditions, like:
+
+INPUT1 = %{or: [[:=, :status, :new], %{and: [[:=, :status, :old], [:=, :age, 50]]}]}
+OUTPUT1 = [
+  {
+    {:"$1", %{status: :"$2", age: :"$3"}},
+    [{:orelse, {:==, :"$2", :new}, {:andalso, {:==, :"$2", :old}, {:==, :"$3", 50}}}],
+    [:"$_"]
+  }
+]
+
+Do not break current working code!
