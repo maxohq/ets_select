@@ -29,6 +29,7 @@ defmodule EtsSelect.MixProject do
   defp package do
     [
       files: ~w(lib mix.exs README* CHANGELOG* LICENCE*),
+      exclude_patterns: [~r/.*_test.exs/, ~r/test_helper.exs/],
       licenses: ["MIT"],
       links: %{
         "Github" => @github_url,
